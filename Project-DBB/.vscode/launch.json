@@ -5,10 +5,10 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "启动程序",
+            "name": "(Windows) 启动",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "Game-body.exe",
+            "program": "Game.exe",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",

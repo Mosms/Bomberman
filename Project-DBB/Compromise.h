@@ -9,19 +9,38 @@
 #include "Bomb.h"
 #include <climits>
 #include "GameMap.h"
-#include "Player.h"
 #include "windows.h"
 #include <utility>
 #include <cassert>
 #include <ctime>
+#include <queue>
 
 #ifndef _GAME__ //标准写法：防止重复定义
 #define _GAME__
 /*0*/
-#define key_down(key_name) ((GetAsyncKeyState(key_name)) ? 1 : 0)
+#define key_down(key_name) ((GetAsyncKeyState(key_name)) & 0x8000)
 const int One_Second = 1000;    // We can change it if we really need
 const int Movement_all_num = 3; // change this thing
 const char init_map[Lines][Col] =
+    {{'+', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '+'},
+     {'|', ' ', ' ', '#', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|'},
+     {'|', ' ', '*', '#', '*', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|'},
+     {'|', ' ', '#', '#', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|'},
+     {'|', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|'},
+     {'|', ' ', '#', '#', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|'},
+     {'|', ' ', '*', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|'},
+     {'|', ' ', '*', '*', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|'},
+     {'|', ' ', '*', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|'},
+     {'|', '#', '#', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|'},
+     {'|', ' ', '*', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|'},
+     {'|', ' ', '*', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|'},
+     {'|', ' ', '*', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|'},
+     {'|', ' ', '*', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|'},
+     {'|', ' ', '*', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|'},
+     {'|', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|'},
+     {'|', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|'},
+     {'+', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '+'}};
+const char init_stuff[Lines][Col] =
     {{'+', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '+'},
      {'|', 'A', '#', '#', '#', 'B', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|'},
      {'|', ' ', '*', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|'},
@@ -41,23 +60,17 @@ const char init_map[Lines][Col] =
      {'|', 'C', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|'},
      {'+', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '+'}}; // Used to init
 const std::pair<int, int> people_1(1, 1);
-const std::pair<int, int> people_2(1, 5); // change and fix
-const std::pair<int, int> Computer_1(9, 4);
-const std::pair<int, int> Computer_2(16, 1);
-enum Direction
+const std::pair<int, int> people_2(1, 16); // change and fix
+const std::pair<int, int> Computer_1(16, 1);
+const std::pair<int, int> Computer_2(16, 16);
+
+enum End
 {
-    Left = 0,
-    Right,
-    Up,
-    Down,
-    Error = 100
-};
-enum Movement
-{
-    out_program = 0,
-    People_1_move,
-    People_2_move
-}; //用来让数组更清晰简洁
+    normal_go = 666,
+    Now_must_end,
+    Normally_end
+}; //更清晰明了
+
 Direction Change_dir(char get_kbit)
 {
     if (get_kbit == 'a' || get_kbit == 'A' || get_kbit == 'j' || get_kbit == 'J')
@@ -70,53 +83,66 @@ Direction Change_dir(char get_kbit)
         return Down;
     else
         return Error;
-}
+} // Maybe useful
 
 class iostream;
-class Game_Body;
-class Gamemap;
 class Player;
+class Bomb;
+class Gamemap;
+class Game_Body;
+
 /*Forward Declarations(前置声明)*/
 /*1*/
 
 class Game_Body // class head
 {
 private:
-    Gamemap this_map; //只能在函数体内被“访问”，数据封装的思想，不想要被外界任意看到
-    Player human_1, human_2;
-    Player fake_1, fake_2;
-    int All_count;
-    bool Check_all, Check_every; //只要有一个true Check_every 显示true就改变状态，刷新一次
-    bool *Reset_do;              // 0代表退出，第一个代表People1行动，第二个代表People2
-    Direction *Reset_dir;
+    Gamemap this_map;          //只能在函数体内被“访问”，数据封装的思想，不想要被外界任意看到
+    Player human_1, human_2;   //经过三次修改，发现还是指针最好用()
+    Player fake_1, fake_2;     //改过指针后发现自己把握不住
+    int All_count, Timer;      // Timer 用来通过模运算来模拟定频率事件
+    bool Check_every;          //只要有一个true Check_every 显示true就改变状态，刷新一次
+    End Check_Ending;          //
+    /* Direction *Reset_dir;*/ // history questions
+    std::priority_queue<Bomb> Store_rest_bomb;
 
 public:
-    Game_Body() : this_map(init_map),
-                  human_1(people_1),
-                  human_2(people_2),
-                  fake_1(Computer_1),
-                  fake_2(Computer_2),
+    Game_Body() : this_map(init_map, init_stuff),
+                  human_1(people_1, 'A'),
+                  human_2(people_2, 'B'),
+                  fake_1(Computer_1, 'C'),
+                  fake_2(Computer_2, 'D'),
                   All_count(0),
-                  Check_all(false),
+                  Timer(0),
+                  Check_Ending(normal_go),
                   Check_every(false)
     {
-        Reset_do = new bool[Movement_all_num];
-        Reset_dir = new Direction[Movement_all_num];
         Reset_movement();
     }
-    ~Game_Body()
-    {
-        delete[] Reset_do;
-        delete[] Reset_dir;
-    }
-    bool Check_all_this() { return Check_all; }
-    bool Check_every_this() { return Check_every; }
-    bool *Reset_do_this() { return Reset_do; }
-    Direction *Reset_dir_this() { return Reset_dir; }
-    int Check_All_count() { return All_count; }
-    bool Check_if_over() { return Reset_do[out_program]; }
-    bool Time_over() { return All_count == One_Second; }
+    ~Game_Body() {}
+    bool Check_every_this() const { return Check_every; }
+    int Check_All_count() const { return All_count; }
+    bool Second_over() const { return All_count == One_Second; }
+    bool Check_if_end() const { return Check_Ending != normal_go; }
 
+    void Check_normally_ending()
+    {
+        if (Timer == 1e9)
+            Check_Ending = Normally_end;
+        int Dead_num = 0;
+        Dead_num += (int)!human_1.Check_living();
+        Dead_num += (int)!human_2.Check_living();
+        Dead_num += (int)!fake_1.Check_living();
+        Dead_num += (int)!fake_2.Check_living();
+        if (Dead_num > 2)
+            Check_Ending = Normally_end;
+        return;
+    }
+    void Add_timer()
+    {
+        Timer++;
+        return;
+    }
     void Add_one_count()
     {
         All_count++;
@@ -126,7 +152,7 @@ public:
     {
         std::cout << "==================================" << std::endl;
         return;
-    }
+    } // prepare_1
     void Display_score()
     {
         std::cout << "   "
@@ -138,17 +164,54 @@ public:
         std::cout << "   "
                   << "Player4:" << fake_2.Check_score() << std::endl;
         return;
+    } // prepare_2
+    void This_Player_display(Player &thisone)
+    {
+        if (thisone.Check_living())
+            if (this_map.Check_if_can_go(thisone.Get_location()))
+                this_map.Change_real_map(thisone.Get_location(), thisone.Check_what_is_it());
+            else
+            {
+                if (this_map.Check_if_is_thisone(thisone.Get_location(), 'O'))
+                    thisone.Change_there_sit('O');
+                this_map.Change_real_map(thisone.Get_location(), 'M');
+            }
+        return;
+    } // prepare_3
+    void Check_people_exist()
+    {
+        This_Player_display(human_1);
+        This_Player_display(human_2);
+        This_Player_display(fake_1);
+        This_Player_display(fake_2);
+        return;
+    } // prepare_4
+    void Reback_sit(Player &thisone)
+    {
+        this_map.Change_real_map(thisone.Get_location(), thisone.What_it_should_be());
+        thisone.Change_there_sit(' '); // only used here to set ' '
+        return;
     }
+    void Reback_all_situation()
+    {
+        Reback_sit(human_1);
+        Reback_sit(human_2);
+        Reback_sit(fake_1);
+        Reback_sit(fake_2);
+        return;
+    } // prepare_5
     void Display()
     {
         Display_a_barriar();
-        std::cout << "    "
-                  << "Press y (or Y) to terminate." << std::endl;
+        std::cout << "     "
+                  << "(Press Esc to terminate)" << std::endl;
         Display_a_barriar();
         std::cout << "积分规则：炸破软墙得5分" << std::endl
                   << "炸死其他玩家得100分" << std::endl;
         Display_a_barriar();
+        Check_people_exist();
         this_map.Print_now_situation();
+        Reback_all_situation();
         Display_a_barriar();
         std::cout << "        "
                   << "Score of Players:" << std::endl;
@@ -163,129 +226,159 @@ public:
     }
     void Reset_movement()
     {
-        memset(Reset_do, false, Movement_all_num * sizeof(bool));
-        memset(Reset_dir, Error, Movement_all_num * sizeof(Direction));
         All_count = 0;
-        Check_all = Check_every = false;
+        Check_every = false;
         return;
     }
-    void Check_all_finish()
+    void Move_that(Player &thisone)
     {
-        if (Reset_do[out_program])
-            Check_all = true;
-        else
-            for (int i = 1; i < Movement_all_num; i++)
-                if (!Reset_do[i])
-                {
-                    Check_all = false;
-                    return;
-                }
-        Check_all = true; // All_true then return true
-        return;
-    }
-    void Check_if_any()
-    {
-        for (int i = 0; i < Movement_all_num; i++)
-            if (Reset_do[i])
-            {
-                Check_every = true;
-                return;
-            }
-        return;
-    }
-    void Move_that(Player &thisone, Direction dir)
-    {
-        int First = thisone.Get_location().first;
-        int Second = thisone.Get_location().second;
-        char check = this_map.Now_map()[thisone.Get_location().first][thisone.Get_location().second];
-        if (dir == Left && this_map.Now_map()[First][Second - 1] == ' ')
+        int First = thisone.Get_location_l();
+        int Second = thisone.Get_location_c();
+        if (thisone.Check_dir() == Left && this_map.Check_if_can_go(First, Second - 1))
             Second--;
-        if (dir == Right && this_map.Now_map()[First][Second + 1] == ' ')
+        if (thisone.Check_dir() == Right && this_map.Check_if_can_go(First, Second + 1))
             Second++;
-        if (dir == Up && this_map.Now_map()[First - 1][Second] == ' ')
-            First--;
-        if (dir == Down && this_map.Now_map()[First + 1][Second] == ' ')
+        if (thisone.Check_dir() == Up && this_map.Check_if_can_go(First - 1, Second))
+            First--; //要注意这里下标的真实含义
+        if (thisone.Check_dir() == Down && this_map.Check_if_can_go(First + 1, Second))
             First++; // fake change over>>
-        if (First != thisone.Get_location().first || Second != thisone.Get_location().second)
+        if (First != thisone.Get_location_l() || Second != thisone.Get_location_c())
         {
             Check_every = true;
-            this_map.Now_map()[First][Second] = check;
-            this_map.Now_map()[thisone.Get_location().first][thisone.Get_location().second] = ' ';
+            thisone.Change_pos(First, Second);
         }
-        thisone.Change_pos(First, Second);
+    }
+    void Putting_bomb(Player *thisone)
+    {
+        if (thisone->Bomb_now_num() && this_map.Check_if_can_go(thisone->Get_location()))
+        {
+            thisone->Put_a_bomb();
+            Bomb New_bomb(thisone, Timer);
+            this_map.Change_real_map(New_bomb.Get_pos(), 'O');
+            Store_rest_bomb.push(New_bomb);
+        }
+        return;
+    }
+    void Bombing(Bomb thisone)
+    {
+        int this_power = thisone.Get_power();
+        std::pair<int, int> this_pos = thisone.Get_pos();
+        return;
+    }
+    void Check_kill_people(std::pair<int, int> this_pos)
+    {
+        return;
+    }
+    void Timer_check_bomb()
+    {
+        if (!Store_rest_bomb.empty())
+        {
+            Bomb check_this = Store_rest_bomb.top();
+            while (check_this.Check_if_to_bomb(Timer))
+            {
+                this_map.Change_real_map(check_this.Get_pos(), ' ');
+                check_this.Check_master()->Back_a_bomb();
+                Store_rest_bomb.pop();
+                if (Store_rest_bomb.empty())
+                    return;
+                else
+                    check_this = Store_rest_bomb.top();
+            }
+        }
+        return;
+    }
+    void Computer_timing_do()
+    {
+        if (Timer % 5 == 0)
+        { //达到计时的效果
+            if (Timer % 50 == 0)
+            {
+                Putting_bomb(&fake_1);
+                Putting_bomb(&fake_2); //这时就可以体会到封装是真爽
+            }
+            srand((int)time(0));
+            fake_1.Change_dir((Direction)(rand() % 4));
+            fake_2.Change_dir((Direction)(rand() % 4));
+            Move_that(fake_1);
+            Move_that(fake_2);
+            Check_every = true;
+        }
+        return;
+    }
+    void Human_timing_do()
+    {
+        if (human_1.Check_if_move())
+        {
+            Move_that(human_1);
+            human_1.Reback_sit();
+            Check_every = true;
+        }
+        if (human_2.Check_if_move())
+        {
+            Move_that(human_2);
+            human_2.Reback_sit();
+            Check_every = true;
+        }
+        return;
     }
     void Deal_with_Input()
     {
         if (_kbhit())
-        {
             _getch();
-            if (key_down('a') || key_down('A'))
-            {
-                Reset_do[People_1_move] = true;
-                Reset_dir[People_1_move] = Left;
-            }
-            if (key_down('w') || key_down('W'))
-            {
-                Reset_do[People_1_move] = true;
-                Reset_dir[People_1_move] = Up;
-            }
-            if (key_down('s') || key_down('S'))
-            {
-                Reset_do[People_1_move] = true;
-                Reset_dir[People_1_move] = Down;
-            }
-            if (key_down('d') || key_down('D'))
-            {
-                Reset_do[People_1_move] = true;
-                Reset_dir[People_1_move] = Right;
-            }
-            if (key_down('j') || key_down('J'))
-            {
-                Reset_do[People_2_move] = true;
-                Reset_dir[People_2_move] = Left;
-            }
-            if (key_down('i') || key_down('I'))
-            {
-                Reset_do[People_2_move] = true;
-                Reset_dir[People_2_move] = Up;
-            }
-            if (key_down('k') || key_down('K'))
-            {
-                Reset_do[People_2_move] = true;
-                Reset_dir[People_2_move] = Down;
-            }
-            if (key_down('l') || key_down('L'))
-            {
-                Reset_do[People_2_move] = true;
-                Reset_dir[People_2_move] = Right;
-            }
-            if (key_down('Y') || key_down('y'))
-                Reset_do[out_program] = true;
+        if (key_down('a') || key_down('A'))
+        {
+            human_1.Sign_this_go();
+            human_1.Change_dir(Left);
         }
+        if (key_down('w') || key_down('W'))
+        {
+            human_1.Sign_this_go();
+            human_1.Change_dir(Up);
+        }
+        if (key_down('s') || key_down('S'))
+        {
+            human_1.Sign_this_go();
+            human_1.Change_dir(Down);
+        }
+        if (key_down('d') || key_down('D'))
+        {
+            human_1.Sign_this_go();
+            human_1.Change_dir(Right);
+        }
+        if (key_down('j') || key_down('J'))
+        {
+            human_2.Sign_this_go();
+            human_2.Change_dir(Left);
+        }
+        if (key_down('i') || key_down('I'))
+        {
+            human_2.Sign_this_go();
+            human_2.Change_dir(Up);
+        }
+        if (key_down('k') || key_down('K'))
+        {
+            human_2.Sign_this_go();
+            human_2.Change_dir(Down);
+        }
+        if (key_down('l') || key_down('L'))
+        {
+            human_2.Sign_this_go();
+            human_2.Change_dir(Right);
+        }
+        if (key_down(0x1B)) // Esc----Search to find it
+            Check_Ending = Now_must_end;
+        if (key_down(0x20)) // " "------Search to find it
+            Putting_bomb(&human_1);
+        if (key_down(0x0D)) // Enter------Search to find it
+            Putting_bomb(&human_2);
         return;
     }
     void Deal_with_Timer()
     {
-        srand((int)time(0));
-        Move_that(fake_1, (Direction)(rand() % 4));
-        Move_that(fake_2, (Direction)(rand() % 4));
-        for (int i = 0; i < Movement_all_num; i++)
-        {
-            if (Reset_do[i])
-                switch ((Movement)i)
-                {
-                case out_program:
-                    break;
-                case People_1_move:
-                    Move_that(human_1, Reset_dir[People_1_move]);
-                    break;
-                case People_2_move:
-                    Move_that(human_2, Reset_dir[People_2_move]);
-                    break;
-                default:
-                    break;
-                }
-        }
+        Timer_check_bomb();
+        Computer_timing_do();
+        Human_timing_do();
+        Add_timer();
         return;
     }
 }; // class body (";"不可少)
