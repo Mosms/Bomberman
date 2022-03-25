@@ -22,10 +22,10 @@ private: //只能在函数体内被“访问”，数据封装的思想，不想
     std::pair<int, int> Location;
     bool living;
     char symbol;
-    int Score;       // display his score
-    int Carry_num;   // useless in this stage
-    bool Fast_speed; //
-    int bomb_power;  // display how long it is
+    int Score;      // display his score
+    int Carry_num;  // useless in this stage
+    int Fast_speed; //
+    int bomb_power; // display how long it is
     bool Move_go;
     Direction move_dir;
     char It_should_be;
@@ -36,7 +36,7 @@ public:
                                                             Score(0),
                                                             living(true),
                                                             Carry_num(1),
-                                                            Fast_speed(false),
+                                                            Fast_speed(0),
                                                             bomb_power(1),
                                                             Move_go(false),
                                                             move_dir(Error),
@@ -67,6 +67,16 @@ public:
     char What_it_should_be() const { return It_should_be; }
     bool Check_if_move() const { return Move_go; }
 
+    void Add_power()
+    {
+        bomb_power++;
+        return;
+    }
+    void Fast_go(int Ending_time)
+    {
+        Fast_speed = Ending_time;
+        return;
+    }
     void Change_dir(Direction To_go)
     {
         move_dir = To_go;
@@ -106,6 +116,21 @@ public:
     void Adding_score(int Value)
     {
         Score += Value;
+        return;
+    }
+    void Minus_score(int Value)
+    {
+        Score -= Value;
+        return;
+    }
+    void Dead_people()
+    {
+        living = false;
+        return;
+    }
+    void Re_live()
+    {
+        living = true;
         return;
     }
     //构造函数：必须存在这样的函数来创造对象

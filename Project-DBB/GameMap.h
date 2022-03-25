@@ -37,18 +37,54 @@ public:
             delete[] Map_itself[i];
         delete[] Map_itself;
     }
-    bool Check_if_can_go(std::pair<int, int> this_pos) const { return Map_itself[this_pos.first][this_pos.second] == ' '; }
-    bool Check_if_can_go(int First, int Second) const { return Map_itself[First][Second] == ' '; }
+    bool Check_if_nothing(std::pair<int, int> this_pos) const { return Map_itself[this_pos.first][this_pos.second] == ' '; }
+    bool Check_if_nothing(int First, int Second) const { return Map_itself[First][Second] == ' '; }
     bool Check_if_is_thisone(std::pair<int, int> this_pos, char thisone) const { return Map_itself[this_pos.first][this_pos.second] == thisone; }
-
+    bool Check_if_is_thisone(int First, int Second, char thisone) const { return Map_itself[First][Second] == thisone; }
+    //
+    bool Check_pick_stuff(std::pair<int, int> this_pos) const { return Map_itself[this_pos.first][this_pos.second] == '1' || Map_itself[this_pos.first][this_pos.second] == '2'; }
+    bool Check_pick_stuff(int First, int Second) const { return Map_itself[First][Second] == '1' || Map_itself[First][Second] == '2'; }
+    //
+    bool Check_treasure(int First, int Second) const { return Map_itself[First][Second] == '$'; }
+    bool Check_treasure(std::pair<int, int> this_pos) const { return Map_itself[this_pos.first][this_pos.second] == '$'; }
+    //
+    bool Check_go(int First, int Second) const
+    {
+        return Check_if_nothing(First, Second) || Check_pick_stuff(First, Second) || Check_treasure(First, Second);
+    }
+    bool Check_go(std::pair<int, int> this_pos) const
+    {
+        return Check_if_nothing(this_pos) || Check_pick_stuff(this_pos) || Check_treasure(this_pos);
+    }
+    //
+    char What_is_stuff_here(int First, int Second) const { return Stuff_mem[First][Second]; }
+    char What_is_really_here(int First, int Second) const { return Map_itself[First][Second]; }
+    char What_is_stuff_here(std::pair<int, int> this_pos) const { return Stuff_mem[this_pos.first][this_pos.second]; }
+    char What_is_really_here(std::pair<int, int> this_pos) const { return Map_itself[this_pos.first][this_pos.second]; }
+    // Maybe useless but it doesn't influnce
+    void Change_real_to_stuff(int First, int Second)
+    {
+        Map_itself[First][Second] = Stuff_mem[First][Second];
+        return;
+    }
     void Change_real_map(std::pair<int, int> thisone, char change_to)
     {
         Map_itself[thisone.first][thisone.second] = change_to;
         return;
     }
+    void Change_real_map(int First, int Second, char change_to)
+    {
+        Map_itself[First][Second] = change_to;
+        return;
+    }
     void Change_stuff_map(std::pair<int, int> thisone, char change_to)
     {
         Stuff_mem[thisone.first][thisone.second] = change_to;
+        return;
+    }
+    void Change_stuff_map(int First, int Second, char change_to)
+    {
+        Stuff_mem[First][Second] = change_to;
         return;
     }
     void init_a_map(const char instore[Lines][Col])
@@ -61,6 +97,22 @@ public:
     {
         for (int i = 0; i < Lines; i++)
             std::cout << "|       " << Map_itself[i] << "       |" << std::endl;
+        return;
+    }
+    void Delete_test()
+    {
+        for (int i = 1; i < Lines - 1; i++)
+            for (int j = 1; j < Col - 2; j++)
+                if (Map_itself[i][j] == '*')
+                    Map_itself[i][j] = ' ';
+        return;
+    }
+    void Reverse_bombing()
+    {
+        for (int i = 1; i < Lines - 1; i++)
+            for (int j = 1; j < Col - 2; j++)
+                if (Map_itself[i][j] == '-' || Map_itself[i][j] == '|')
+                    Map_itself[i][j] = ' ';
         return;
     }
 }; // class body (";"不可少)
