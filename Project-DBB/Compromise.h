@@ -461,30 +461,32 @@ public:
         bool flag_check = false;
         if (thisone.Check_master()->Check_living() == true)
             flag_check = true;
-        if (human_1.Get_location() == this_pos)
+        if (human_1.Get_location() == this_pos && human_1.Check_living())
         {
             thisone.Check_master()->Adding_score(Kill_people_score);
             human_1.Dead_people();
         }
-        if (human_2.Get_location() == this_pos)
+        if (human_2.Get_location() == this_pos && human_2.Check_living())
         {
             thisone.Check_master()->Adding_score(Kill_people_score);
             human_2.Dead_people();
         }
-        if (fake_1.Get_location() == this_pos)
+        if (fake_1.Get_location() == this_pos && fake_1.Check_living())
         {
             thisone.Check_master()->Adding_score(Kill_people_score);
             fake_1.Dead_people();
         }
-        if (fake_2.Get_location() == this_pos)
+        if (fake_2.Get_location() == this_pos && fake_2.Check_living())
         {
             thisone.Check_master()->Adding_score(Kill_people_score);
             fake_2.Dead_people();
         }
         if (thisone.Check_master()->Check_living() == false && flag_check)
+        {
             thisone.Check_master()->Minus_score(Kill_people_score); //只用在最后检查一下即可
-        /*if (thisone.Check_master()->Check_what_is_it() == 'C' || thisone.Check_master()->Check_what_is_it() == 'D')
-            thisone.Check_master()->Re_live(); //让机器人不炸死自己，我认为这是游戏平衡性的最好实现方法*/
+            if (thisone.Check_master()->Check_what_is_it() == 'C' || thisone.Check_master()->Check_what_is_it() == 'D')
+                thisone.Check_master()->Re_live(); //让机器人不炸死自己，我认为这是游戏平衡性的最好实现方法*/
+        }
         return;
     }
     void Check_kill_people(int First, int Second, Bomb thisone)
@@ -542,7 +544,7 @@ public:
                 thisone.Change_remeber(right_up);
         }
         return;
-    }
+    } //仍然存在，可以随时启用
     void Computer_dir_move(Player &thisone)
     {
         if (thisone.now_sta() == Eor)
@@ -617,8 +619,8 @@ public:
                 return;
         }
         return;
-    }
-    void Computer_timing_do()
+    } //仍然存在，可以随时启用
+    void Computer_timing_old_version()
     {
         if (Timer % 5 == 0)
         { //达到计时的效果
@@ -654,6 +656,45 @@ public:
                 Move_that(fake_2);
                 fake_2.Change_remeber(right_up);
             }
+        }
+        return;
+    }
+    void Computer_Random_go(Player &thisone)
+    {
+        Direction Rem[4];
+        srand(time(0));
+        int Max_index = -1;
+        if (this_map.Check_go(thisone.Get_location_l(), thisone.Get_location_c() + 1))
+            Rem[++Max_index] = Right;
+        if (this_map.Check_go(thisone.Get_location_l(), thisone.Get_location_c() - 1))
+            Rem[++Max_index] = Left;
+        if (this_map.Check_go(thisone.Get_location_l() - 1, thisone.Get_location_c()))
+            Rem[++Max_index] = Up;
+        if (this_map.Check_go(thisone.Get_location_l() + 1, thisone.Get_location_c()))
+            Rem[++Max_index] = Down;
+        if (Max_index < 0)
+            return;
+        Max_index++;
+        thisone.Change_dir(Rem[rand() % Max_index]);
+        Move_that(thisone);
+    }
+    void Computer_timing_new_version()
+    {
+        srand(time(0));
+        if (Timer % 5 == 0)
+        { //达到计时的效果
+            /* Direction change_it = (Direction)(rand() % 4);
+            fake_1.Change_dir(change_it);
+            change_it = (Direction)(rand() % 4);
+            fake_2.Change_dir(change_it);*/
+            if (fake_1.Check_living())
+                Computer_Random_go(fake_1);
+            if (fake_2.Check_living())
+                Computer_Random_go(fake_2);
+            if (fake_1.Check_living() && this_map.Check_this_pos_useful(fake_1.Get_location()))
+                Putting_bomb(&fake_1);
+            if (fake_2.Check_living() && this_map.Check_this_pos_useful(fake_2.Get_location()))
+                Putting_bomb(&fake_2); //这时就可以体会到封装是真爽
         }
         return;
     }
@@ -740,7 +781,7 @@ public:
     void Deal_with_Timer()
     {
         Timer_check_bomb();
-        Computer_timing_do();
+        Computer_timing_new_version(); // Computer_timing_old_version();
         Human_timing_do();
         Add_timer();
         return;

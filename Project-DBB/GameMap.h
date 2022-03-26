@@ -57,6 +57,18 @@ public:
         return Check_if_nothing(this_pos) || Check_pick_stuff(this_pos) || Check_treasure(this_pos);
     }
     //
+    bool Check_this_pos_useful(int First, int Second)
+    {
+        return Map_itself[First - 1][Second] == '*' ||
+               Map_itself[First + 1][Second] == '*' ||
+               Map_itself[First][Second - 1] == '*' ||
+               Map_itself[First][Second + 1] == '*';
+    }
+    bool Check_this_pos_useful(std::pair<int, int> this_pos)
+    {
+        return Check_this_pos_useful(this_pos.first, this_pos.second);
+    }
+    //
     char What_is_stuff_here(int First, int Second) const { return Stuff_mem[First][Second]; }
     char What_is_really_here(int First, int Second) const { return Map_itself[First][Second]; }
     char What_is_stuff_here(std::pair<int, int> this_pos) const { return Stuff_mem[this_pos.first][this_pos.second]; }

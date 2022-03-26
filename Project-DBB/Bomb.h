@@ -21,7 +21,7 @@ private: //只能在函数体内被“访问”，数据封装的思想，不想
 public:
     Bomb(Player *thisone, int Starting_time) : power(thisone->Check_bomb_power()),
                                                Bomb_ending_time(Starting_time),
-                                               Bombing_need_time(10), // to Change
+                                               Bombing_need_time(8), // to Change
                                                Position(thisone->Get_location()),
                                                Who_has_me(thisone)
     {
