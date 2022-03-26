@@ -13,6 +13,8 @@
 #include "windows.h"
 #include "Compromise.h"
 #define key_down(key_name) ((GetAsyncKeyState(key_name)) & 0x8000)
+
+const bool This_is_a_good_game = true;
 //改变思路有些分离->完全使用Game类
 
 int main(void)
@@ -29,13 +31,31 @@ int main(void)
             if (Game_go.Check_if_end())
                 break;
             Game_go.Deal_with_Timer();
-            if (Game_go.Check_every_this())
+            if (This_is_a_good_game)
             {
-                system("cls");
-                Game_go.Display();
-                Sleep(50);
+                if (Game_go.Check_every_this())
+                {
+                    system("cls");
+                    Game_go.Display();
+                    Sleep(25);
+                }
+                if (Game_go.there_is_some_one_fast())
+                {
+
+                    Game_go.Fast_go();
+                    system("cls");
+                    Game_go.Display();
+                }
+                Sleep(25);
             }
+            // two-25
             Game_go.Reset_movement(); // reset
+            Game_go.Check_normally_ending();
+            if (Game_go.Check_if_normally_end())
+            {
+                Game_go.Print_Winer();
+                break;
+            }
         }
     }
     return 0;

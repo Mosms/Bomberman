@@ -19,47 +19,53 @@
 #define _GAME__
 /*0*/
 #define key_down(key_name) ((GetAsyncKeyState(key_name)) & 0x8000)
-const int One_Second = 1000;    // We can change it if we really need
-const int Movement_all_num = 3; // change this thing
+const int One_Second = 1000;                 // We can change it if we really need
+const int Movement_all_num = 3;              // change this thing
+const int Ending_timer = 3 * 60 * 1000 / 50; //相当于三分钟
+const int Kill_people_score = 500;
+const int Bomb_wall_score = 10;
+const int treasure = 100;
+const int Fast_time = 20;
 const char init_map[Lines][Col] =
     {{'+', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '+'},
      {'|', ' ', ' ', '*', '*', '*', '#', '*', '#', '*', '#', '#', '*', '*', '*', ' ', ' ', '|'},
      {'|', ' ', '#', '#', '#', '*', '#', '*', '*', '*', '*', '*', '*', '#', '#', '#', ' ', '|'},
-     {'|', '*', '#', '#', '*', '*', '#', '#', '#', '#', '*', '#', '#', '*', '#', '#', '*', '|'},
-     {'|', '*', '*', '*', '*', '*', '#', '*', '*', '*', '*', '#', '#', '*', '*', '*', '*', '|'},
-     {'|', '#', '#', '#', '#', '*', '#', '*', '#', '#', '#', '#', '#', '#', '#', '#', '*', '|'},
-     {'|', '#', '*', '#', '*', '*', '#', '*', '*', '*', '*', '#', '*', '*', '*', '#', '*', '|'},
-     {'|', '*', '*', '*', '*', '#', '#', '#', '#', '#', '*', '#', '#', '*', '#', '#', '*', '|'},
+     {'|', '*', '#', '*', '*', '*', '#', '#', '#', '#', '*', '#', '#', '*', '#', '#', '*', '|'},
+     {'|', '*', '#', '*', '*', '*', '#', '*', '*', '*', '*', '#', '#', '*', '*', '*', '*', '|'},
+     {'|', '*', '#', '*', '#', '*', '#', '*', '#', '#', '#', '#', '#', '#', '#', '#', '*', '|'},
+     {'|', '*', '#', '#', '*', '*', '#', '*', '*', '*', '*', '#', '*', '*', '*', '#', '*', '|'},
+     {'|', '*', '#', '*', '*', '#', '#', '#', '#', '#', '*', '#', '#', '*', '#', '#', '*', '|'},
      {'|', '*', '#', '#', '*', '#', '*', '*', '*', '*', '*', '#', '*', '*', '#', '#', '*', '|'},
      {'|', '*', '#', '#', '*', '*', '*', '*', '#', '#', '#', '#', '#', '*', '*', '*', '*', '|'},
-     {'|', '*', '*', '*', '*', '#', '#', '*', '*', '*', '*', '#', '*', '*', '#', '#', '*', '|'},
-     {'|', '#', '*', '#', '*', '*', '#', '#', '#', '#', '*', '#', '*', '*', '*', '#', '*', '|'},
-     {'|', '#', '#', '#', '#', '*', '#', '*', '*', '*', '*', '#', '#', '#', '#', '#', '*', '|'},
-     {'|', '*', '*', '*', '*', '*', '#', '*', '#', '#', '#', '#', '#', '*', '*', '*', '*', '|'},
+     {'|', '*', '#', '*', '*', '#', '#', '*', '*', '*', '*', '#', '*', '*', '#', '#', '*', '|'},
+     {'|', '*', '#', '#', '*', '*', '#', '#', '#', '#', '*', '#', '*', '*', '*', '#', '*', '|'},
+     {'|', '*', '#', '#', '#', '*', '#', '*', '*', '*', '*', '#', '#', '#', '#', '#', '*', '|'},
+     {'|', '*', '#', '*', '*', '*', '#', '*', '#', '#', '#', '#', '#', '*', '*', '*', '*', '|'},
      {'|', '*', '#', '#', '*', '*', '#', '*', '*', '*', '*', '#', '#', '*', '#', '#', '*', '|'},
      {'|', ' ', '#', '#', '#', '*', '#', '#', '#', '#', '*', '*', '*', '#', '#', '#', ' ', '|'},
      {'|', ' ', ' ', '*', '*', '*', '#', '*', '*', '*', '*', '#', '*', '*', '*', ' ', ' ', '|'},
      {'+', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '+'}};
-const char init_stuff[Lines][Col] = // 1代表加速度，2代表增加炸弹威力
+const char init_stuff[Lines][Col] = /* 1代表加速度，2代表增加炸弹威力 3代表增加可释放炸弹的个数*/
     {{'+', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '+'},
-     {'|', ' ', ' ', '2', '$', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|'},
-     {'|', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|'},
-     {'|', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|'},
-     {'|', '$', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|'},
-     {'|', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|'},
-     {'|', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|'},
-     {'|', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|'},
-     {'|', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|'},
-     {'|', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|'},
-     {'|', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|'},
-     {'|', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|'},
-     {'|', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|'},
-     {'|', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|'},
-     {'|', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|'},
-     {'|', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|'},
-     {'|', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|'},
-     {'+', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '+'}}; // Used to init
-                                                                                                  // Stuff only to check and search
+     {'|', ' ', ' ', ' ', '$', ' ', '#', '3', '#', ' ', '#', '#', ' ', ' ', ' ', ' ', ' ', '|'},
+     {'|', ' ', '#', '#', '#', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#', '#', '#', ' ', '|'},
+     {'|', ' ', '#', ' ', '2', ' ', '#', '#', '#', '#', ' ', '#', '#', '3', '#', '#', ' ', '|'},
+     {'|', ' ', '#', ' ', ' ', '1', '#', ' ', ' ', '2', ' ', '#', '#', ' ', ' ', ' ', ' ', '|'},
+     {'|', ' ', '#', '$', '#', ' ', '#', ' ', '#', '#', '#', '#', '#', '#', '#', '#', ' ', '|'},
+     {'|', ' ', '#', '#', ' ', ' ', '#', ' ', '1', ' ', ' ', '#', '2', ' ', '1', '#', ' ', '|'},
+     {'|', ' ', '#', ' ', ' ', '#', '#', '#', '#', '#', ' ', '#', '#', ' ', '#', '#', ' ', '|'},
+     {'|', '$', '#', '#', ' ', '#', '1', ' ', ' ', ' ', ' ', '#', '1', ' ', '#', '#', ' ', '|'},
+     {'|', ' ', '#', '#', '1', ' ', ' ', ' ', '#', '#', '#', '#', '#', ' ', ' ', ' ', ' ', '|'},
+     {'|', '2', '#', '3', ' ', '#', '#', ' ', ' ', ' ', '$', '#', ' ', ' ', '#', '#', '1', '|'},
+     {'|', ' ', '#', '#', ' ', ' ', '#', '#', '#', '#', ' ', '#', ' ', ' ', '$', '#', ' ', '|'},
+     {'|', ' ', '#', '$', '#', '1', '#', '$', ' ', ' ', ' ', '#', '#', '#', '#', '#', ' ', '|'},
+     {'|', '$', '#', ' ', ' ', ' ', '#', ' ', '#', '#', '#', '#', '#', '$', ' ', ' ', ' ', '|'},
+     {'|', ' ', '#', ' ', '2', ' ', '#', '1', ' ', '2', ' ', '#', '#', '2', '#', '#', ' ', '|'},
+     {'|', ' ', '#', '#', '#', ' ', '#', '#', '#', '#', ' ', ' ', ' ', '#', '#', '#', ' ', '|'},
+     {'|', ' ', ' ', ' ', ' ', ' ', '#', '3', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', '|'},
+     {'+', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '+'}};
+/*这里的#无实际意义，只是为了便于标记地图，方便设计道具*/                                                       // Used to init
+/*为了游戏平衡性，设置6个增加炸弹威力的道具，增加速度的道具可以多一点，6个增加炸弹数量的道具，4个增加炸弹个数*/ /*Stuff only to check and search*/
 const std::pair<int, int> people_1(1, 1);
 const std::pair<int, int> people_2(1, 16); // change and fix
 const std::pair<int, int> Computer_1(16, 1);
@@ -102,9 +108,10 @@ private:
     Player human_1, human_2;      //经过三次修改，发现还是指针最好用()
     Player fake_1, fake_2;        //改过指针后发现自己把握不住
     int All_count, Timer;         // Timer 用来通过模运算来模拟定频率事件
-    bool Check_every, Check_bomb; //只要有一个true Check_every 显示true就改变状态，刷新一次
-    End Check_Ending;             //
-    /* Direction *Reset_dir;*/    // history questions
+    bool Check_bomb, Check_every; //只要有一个true Check_every 显示true就改变状态，刷新一次
+    // 为历史遗留问题
+    End Check_Ending;          //
+    /* Direction *Reset_dir;*/ // history questions
     std::priority_queue<Bomb> Store_rest_bomb;
 
 public:
@@ -116,29 +123,102 @@ public:
                   All_count(0),
                   Timer(0),
                   Check_Ending(normal_go),
-                  Check_every(false),
-                  Check_bomb(false)
+                  Check_bomb(false),
+                  Check_every(false)
     {
         Reset_movement();
-        /*this_map.Delete_test();//only used to see my real map*/
+        /*this_map.Delete_test(); // only used to see my real map*/
     }
     ~Game_Body() {}
     bool Check_every_this() const { return Check_every; }
     int Check_All_count() const { return All_count; }
     bool Second_over() const { return All_count == One_Second; }
     bool Check_if_end() const { return Check_Ending != normal_go; }
+    bool Check_if_normally_end() const { return Check_Ending == Normally_end; }
+    bool Check_thisone_fast(Player thisone) const { return thisone.Check_speed() > Timer; }
+    bool Score_out(Player thisone) const { return thisone.Check_score() > 1000; }
+    bool there_is_some_one_fast() const
+    {
+        return Check_thisone_fast(human_1) || Check_thisone_fast(human_2) || Check_thisone_fast(fake_1) || Check_thisone_fast(fake_2);
+    }
 
     void Check_normally_ending()
     {
-        if (Timer == 1e9)
+        if (Timer == Ending_timer) //计算过
             Check_Ending = Normally_end;
         int Dead_num = 0;
+        Dead_num += human_1.Check_living() ? 0 : 1;
+        Dead_num += human_2.Check_living() ? 0 : 1;
+        Dead_num += fake_1.Check_living() ? 0 : 1;
+        Dead_num += fake_2.Check_living() ? 0 : 1;
+        if (Dead_num > 2)
+            Check_Ending = Normally_end;
+        if (human_1.Check_score() >= 1200 ||
+            human_2.Check_score() >= 1200 ||
+            fake_1.Check_score() >= 1200 ||
+            fake_2.Check_score() >= 1200)
+            Check_Ending = Normally_end;
+        return;
+    }
+    void Print_Winer()
+    {
+        int Dead_num = 0;
+        Player winer = human_1;
         Dead_num += (int)!human_1.Check_living();
         Dead_num += (int)!human_2.Check_living();
         Dead_num += (int)!fake_1.Check_living();
         Dead_num += (int)!fake_2.Check_living();
-        if (Dead_num > 2)
-            Check_Ending = Normally_end;
+        if (Dead_num == 4)
+        {
+            if (human_2.Check_score() > winer.Check_score())
+                winer = human_2;
+            if (fake_1.Check_score() > winer.Check_score())
+                winer = fake_1;
+            if (fake_2.Check_score() > winer.Check_score())
+                winer = fake_2;
+            std::cout << "         "
+                      << "Winer: " << winer.Check_what_is_it() << std::endl
+                      << "         "
+                      << "Congratulations!";
+        }
+        else if (Dead_num > 2)
+        {
+            if (human_1.Check_living())
+                winer = human_1;
+            else if (human_2.Check_living())
+                winer = human_2;
+            else if (fake_1.Check_living())
+                winer = fake_1;
+            else if (fake_2.Check_living())
+                winer = fake_2;
+            std::cout << "         "
+                      << "Winer: " << winer.Check_what_is_it() << std::endl
+                      << "         "
+                      << "Congratulations!";
+        }
+        else //有多人存活的情况
+        {
+            if (human_1.Check_living())
+                winer = human_1;
+            else if (human_2.Check_living())
+                winer = human_2;
+            else if (fake_1.Check_living())
+                winer = fake_1;
+            else if (fake_2.Check_living())
+                winer = fake_2; //先随便扫一个出来
+            if (human_1.Check_living() && human_1.Check_score() > winer.Check_score())
+                winer = human_1;
+            if (human_2.Check_living() && human_2.Check_score() > winer.Check_score())
+                winer = human_2;
+            if (fake_1.Check_living() && fake_1.Check_score() > winer.Check_score())
+                winer = fake_1;
+            if (fake_2.Check_living() && fake_2.Check_score() > winer.Check_score())
+                winer = fake_2;
+            std::cout << "         "
+                      << "Winer: " << winer.Check_what_is_it() << std::endl
+                      << "         "
+                      << "Congratulations!";
+        }
         return;
     }
     void Add_timer()
@@ -210,10 +290,13 @@ public:
                   << "(Press Esc to terminate)" << std::endl;
         Display_a_barriar();
         std::cout << "积分规则：炸破软墙得10分" << std::endl
-                  << "炸死其他玩家得100分" << std::endl
+                  << "炸死其他玩家得500分" << std::endl
                   << "道具效果：道具一加快移动速度" << std::endl
                   << "道具二增加炸弹射程" << std::endl
-                  << "Tips:地图$宝藏$等你发掘" << std::endl;
+                  << "道具三增加炸弹容量" << std::endl
+                  << "Winning tips: get more score" << std::endl
+                  << "And: kill more player!" << std::endl
+                  << "Another:地图$宝藏$等你发掘" << std::endl;
         Display_a_barriar();
         Check_people_exist();
         this_map.Print_now_situation();
@@ -259,11 +342,13 @@ public:
             thisone.Change_pos(First, Second);
         }
         if (this_map.Check_if_is_thisone(First, Second, '1'))
-            thisone.Fast_go(Timer + 10); // can change it
+            thisone.Fast_go(Timer + Fast_time); // can change it//you have 20 rounds' fast-speed
         if (this_map.Check_if_is_thisone(First, Second, '2'))
             thisone.Add_power(); // can change it
         if (this_map.Check_if_is_thisone(First, Second, '$'))
-            thisone.Adding_score(80);
+            thisone.Adding_score(treasure);
+        if (this_map.Check_if_is_thisone(First, Second, '3'))
+            thisone.Carry_num_adding();
         return;
     }
     void Putting_bomb(Player *thisone)
@@ -274,11 +359,13 @@ public:
             Bomb New_bomb(thisone, Timer);
             this_map.Change_real_map(New_bomb.Get_pos(), 'O');
             Store_rest_bomb.push(New_bomb);
+            Check_every = true;
         }
         return;
     }
-    void Bombing(Bomb thisone)
+    void Bombing(Bomb &thisone)
     {
+        Check_every = true;
         int this_power = thisone.Get_power();
         std::pair<int, int> this_pos = thisone.Get_pos();
         Check_kill_people(this_pos, thisone);
@@ -294,7 +381,7 @@ public:
             else if (this_map.Check_if_is_thisone(First, Second, '*'))
             {
                 this_map.Change_real_to_stuff(First, Second);
-                thisone.Check_master()->Adding_score(10);
+                thisone.Check_master()->Adding_score(Bomb_wall_score);
                 break;
             }
             else if (this_map.Check_if_is_thisone(First, Second, '#'))
@@ -315,7 +402,7 @@ public:
             else if (this_map.Check_if_is_thisone(First, Second, '*'))
             {
                 this_map.Change_real_to_stuff(First, Second);
-                thisone.Check_master()->Adding_score(10);
+                thisone.Check_master()->Adding_score(Bomb_wall_score);
                 break;
             }
             else if (this_map.Check_if_is_thisone(First, Second, '#'))
@@ -336,7 +423,7 @@ public:
             else if (this_map.Check_if_is_thisone(First, Second, '*'))
             {
                 this_map.Change_real_to_stuff(First, Second);
-                thisone.Check_master()->Adding_score(10);
+                thisone.Check_master()->Adding_score(Bomb_wall_score);
                 break;
             }
             else if (this_map.Check_if_is_thisone(First, Second, '#'))
@@ -357,7 +444,7 @@ public:
             else if (this_map.Check_if_is_thisone(First, Second, '*'))
             {
                 this_map.Change_real_to_stuff(First, Second);
-                thisone.Check_master()->Adding_score(10);
+                thisone.Check_master()->Adding_score(Bomb_wall_score);
                 break;
             }
             else if (this_map.Check_if_is_thisone(First, Second, '#'))
@@ -376,26 +463,28 @@ public:
             flag_check = true;
         if (human_1.Get_location() == this_pos)
         {
-            thisone.Check_master()->Adding_score(100);
+            thisone.Check_master()->Adding_score(Kill_people_score);
             human_1.Dead_people();
         }
         if (human_2.Get_location() == this_pos)
         {
-            thisone.Check_master()->Adding_score(100);
+            thisone.Check_master()->Adding_score(Kill_people_score);
             human_2.Dead_people();
         }
         if (fake_1.Get_location() == this_pos)
         {
-            thisone.Check_master()->Adding_score(100);
+            thisone.Check_master()->Adding_score(Kill_people_score);
             fake_1.Dead_people();
         }
         if (fake_2.Get_location() == this_pos)
         {
-            thisone.Check_master()->Adding_score(100);
+            thisone.Check_master()->Adding_score(Kill_people_score);
             fake_2.Dead_people();
         }
         if (thisone.Check_master()->Check_living() == false && flag_check)
-            thisone.Check_master()->Minus_score(100); //只用在最后检查一下即可
+            thisone.Check_master()->Minus_score(Kill_people_score); //只用在最后检查一下即可
+        /*if (thisone.Check_master()->Check_what_is_it() == 'C' || thisone.Check_master()->Check_what_is_it() == 'D')
+            thisone.Check_master()->Re_live(); //让机器人不炸死自己，我认为这是游戏平衡性的最好实现方法*/
         return;
     }
     void Check_kill_people(int First, int Second, Bomb thisone)
@@ -423,25 +512,148 @@ public:
         }
         return;
     }
+    void Simple_run(Player &thisone)
+    {
+        if (thisone.now_sta() == left_down)
+            thisone.Change_remeber(right_up);
+        else if (thisone.now_sta() == left_up)
+            thisone.Change_remeber(right_down);
+        else if (thisone.now_sta() == right_up)
+            thisone.Change_remeber(left_down);
+        else if (thisone.now_sta() == right_down)
+            thisone.Change_remeber(left_up);
+        else if (thisone.now_sta() == Eor)
+        {
+            if ((this_map.Check_go(thisone.Get_location_l() + 1, thisone.Get_location_c())     //
+                 || this_map.Check_go(thisone.Get_location_l(), thisone.Get_location_c() + 1)) //
+                && thisone.Check_what_is_it() == 'C')
+                thisone.Change_remeber(right_down);
+            else if ((this_map.Check_go(thisone.Get_location_l() - 1, thisone.Get_location_c())     //
+                      || this_map.Check_go(thisone.Get_location_l(), thisone.Get_location_c() - 1)) //
+                     && thisone.Check_what_is_it() == 'C')
+                thisone.Change_remeber(left_up);
+            else if ((this_map.Check_go(thisone.Get_location_l() + 1, thisone.Get_location_c())     //
+                      || this_map.Check_go(thisone.Get_location_l(), thisone.Get_location_c() - 1)) //
+                     && thisone.Check_what_is_it() == 'D')
+                thisone.Change_remeber(left_down);
+            else if ((this_map.Check_go(thisone.Get_location_l() - 1, thisone.Get_location_c())     //
+                      || this_map.Check_go(thisone.Get_location_l(), thisone.Get_location_c() + 1)) //
+                     && thisone.Check_what_is_it() == 'C')
+                thisone.Change_remeber(right_up);
+        }
+        return;
+    }
+    void Computer_dir_move(Player &thisone)
+    {
+        if (thisone.now_sta() == Eor)
+            return; //通过其他方式让它动起来
+        else if (thisone.now_sta() == left_down)
+        {
+            if (this_map.Check_go(thisone.Get_location_l() + 1, thisone.Get_location_c()))
+            {
+                thisone.Change_dir(Down);
+                Move_that(thisone);
+                Check_every = true;
+            }
+            else if (this_map.Check_go(thisone.Get_location_l(), thisone.Get_location_c() - 1))
+            {
+                thisone.Change_dir(Left);
+                Move_that(thisone);
+                Check_every = true;
+            }
+            else
+                return;
+        }
+        else if (thisone.now_sta() == left_up)
+        {
+
+            if (this_map.Check_go(thisone.Get_location_l(), thisone.Get_location_c() - 1))
+            {
+                thisone.Change_dir(Left);
+                Move_that(thisone);
+                Check_every = true;
+            }
+            else if (this_map.Check_go(thisone.Get_location_l() - 1, thisone.Get_location_c()))
+            {
+                thisone.Change_dir(Up);
+                Move_that(thisone);
+                Check_every = true;
+            }
+            else
+                return;
+        }
+        else if (thisone.now_sta() == right_up)
+        {
+            if (this_map.Check_go(thisone.Get_location_l() - 1, thisone.Get_location_c()))
+            {
+                thisone.Change_dir(Up);
+                Move_that(thisone);
+                Check_every = true;
+            }
+            else if (this_map.Check_go(thisone.Get_location_l(), thisone.Get_location_c() + 1))
+            {
+                thisone.Change_dir(Right);
+                Move_that(thisone);
+                Check_every = true;
+            }
+            else
+                return;
+        }
+        else if (thisone.now_sta() == right_down)
+        {
+            if (this_map.Check_go(thisone.Get_location_l() + 1, thisone.Get_location_c()))
+            {
+                thisone.Change_dir(Down);
+                Move_that(thisone);
+                Check_every = true;
+            }
+            else if (this_map.Check_go(thisone.Get_location_l(), thisone.Get_location_c() + 1))
+            {
+                thisone.Change_dir(Right);
+                Move_that(thisone);
+                Check_every = true;
+            }
+            else
+                return;
+        }
+        return;
+    }
     void Computer_timing_do()
     {
         if (Timer % 5 == 0)
         { //达到计时的效果
             if (Timer % 50 == 0)
             {
-                if (fake_1.Check_living())
+                if (fake_1.Bomb_now_num() && fake_1.Check_living() && fake_1.Get_location() != Computer_1)
+                {
                     Putting_bomb(&fake_1);
-                if (fake_2.Check_living())
-                    Putting_bomb(&fake_2); //这时就可以体会到封装是真爽
+                    Simple_run(fake_1);
+                    Check_every = true;
+                }
+                if (fake_1.Bomb_now_num() && fake_2.Check_living() && fake_1.Get_location() != Computer_1)
+                {
+                    Putting_bomb(&fake_2);
+                    Simple_run(fake_2);
+                    Check_every = true;
+                } //这时就可以体会到封装是真爽
             }
-            srand((int)time(0));
-            fake_1.Change_dir((Direction)(rand() % 4));
-            fake_2.Change_dir((Direction)(rand() % 4));
             if (fake_1.Check_living())
-                Move_that(fake_1);
+                Computer_dir_move(fake_1);
+            // Now let us complete a good fake player
             if (fake_2.Check_living())
+                Computer_dir_move(fake_2);
+            if (fake_1.now_sta() == Eor)
+            {
+                fake_1.Change_dir(Up);
+                Move_that(fake_1);
+                fake_1.Change_remeber(right_down);
+            }
+            if (fake_2.now_sta() == Eor)
+            {
+                fake_2.Change_dir(Left);
                 Move_that(fake_2);
-            Check_every = true;
+                fake_2.Change_remeber(right_up);
+            }
         }
         return;
     }
@@ -459,6 +671,18 @@ public:
             human_2.Reback_sit();
             Check_every = true;
         }
+        return;
+    }
+    void Fast_go()
+    {
+        if (Check_thisone_fast(human_1))
+            Move_that(human_1);
+        if (Check_thisone_fast(human_2))
+            Move_that(human_2);
+        if (Check_thisone_fast(fake_1))
+            Move_that(fake_1);
+        if (Check_thisone_fast(fake_2))
+            Move_that(fake_2);
         return;
     }
     void Deal_with_Input()

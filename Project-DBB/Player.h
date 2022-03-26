@@ -13,6 +13,14 @@ enum Direction
     Down,
     Error = 100
 };
+enum Run
+{
+    Eor = 100,
+    left_up,
+    left_down,
+    right_up,
+    right_down
+};
 
 /*Forward Declarations(前置声明)*/
 /*1*/
@@ -28,10 +36,12 @@ private: //只能在函数体内被“访问”，数据封装的思想，不想
     int bomb_power; // display how long it is
     bool Move_go;
     Direction move_dir;
+    Run Remember; // only for computer
     char It_should_be;
 
 public:
     Player(std::pair<int, int> new_location, char Symbol) : Location(new_location),
+                                                            Remember(Eor),
                                                             symbol(Symbol),
                                                             Score(0),
                                                             living(true),
@@ -66,6 +76,7 @@ public:
     std::pair<int, int> Get_location() const { return Location; }
     char What_it_should_be() const { return It_should_be; }
     bool Check_if_move() const { return Move_go; }
+    Run now_sta() const { return Remember; }
 
     void Add_power()
     {
@@ -82,9 +93,19 @@ public:
         move_dir = To_go;
         return;
     }
+    void Change_remeber(Run how_to_survive)
+    {
+        Remember = how_to_survive;
+        return;
+    }
     void Sign_this_go()
     {
         Move_go = true;
+        return;
+    }
+    void Carry_num_adding()
+    {
+        Carry_num++;
         return;
     }
     void Change_there_sit(char this_is)

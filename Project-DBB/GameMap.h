@@ -42,8 +42,8 @@ public:
     bool Check_if_is_thisone(std::pair<int, int> this_pos, char thisone) const { return Map_itself[this_pos.first][this_pos.second] == thisone; }
     bool Check_if_is_thisone(int First, int Second, char thisone) const { return Map_itself[First][Second] == thisone; }
     //
-    bool Check_pick_stuff(std::pair<int, int> this_pos) const { return Map_itself[this_pos.first][this_pos.second] == '1' || Map_itself[this_pos.first][this_pos.second] == '2'; }
-    bool Check_pick_stuff(int First, int Second) const { return Map_itself[First][Second] == '1' || Map_itself[First][Second] == '2'; }
+    bool Check_pick_stuff(std::pair<int, int> this_pos) const { return Check_pick_stuff(this_pos.first, this_pos.second); }
+    bool Check_pick_stuff(int First, int Second) const { return Map_itself[First][Second] == '1' || Map_itself[First][Second] == '2' || Map_itself[First][Second] == '3'; }
     //
     bool Check_treasure(int First, int Second) const { return Map_itself[First][Second] == '$'; }
     bool Check_treasure(std::pair<int, int> this_pos) const { return Map_itself[this_pos.first][this_pos.second] == '$'; }
